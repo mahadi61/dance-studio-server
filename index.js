@@ -31,6 +31,39 @@ async function run() {
     await client.connect();
 
 
+    const usersCollection = client.db("danceDB").collection("users");
+
+
+    
+
+     // users collection api 
+    //  TODO: verifyJWT, verifyAdmin, before async function
+     app.get('/allUsers',  async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+
+    // store user email on database
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email }
+      const exist = await usersCollection.findOne(query);
+
+      if (exist) {
+        return res.send({ message: 'user already exists' })
+      }
+
+      const result = await usersCollection.insertOne(user);
+      res.send(result);
+    });
+
+
+
+
+
+
+
 
 
 
