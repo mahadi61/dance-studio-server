@@ -44,6 +44,14 @@ async function run() {
       res.send(result);
     });
 
+
+    // get all class approved by admin
+    app.get('/classes', async (req, res)=>{
+      const query = { status : "approved" };
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    })
+
     // add class in database api
     app.post('/addClass', async (req, res) => {
       const classData = req.body;
