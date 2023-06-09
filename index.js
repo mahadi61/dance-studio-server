@@ -72,6 +72,20 @@ async function run() {
       res.send(result);
 
     })
+    // make user admin api
+
+    app.patch('/users/instructor/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: 'instructor'
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
 
 
 
