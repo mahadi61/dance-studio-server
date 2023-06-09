@@ -47,9 +47,8 @@ async function run() {
     // add class in database api
     app.post('/addClass', async (req, res) => {
       const classData = req.body;
-      console.log(classData);
-      // const result = await classCollection.insertOne(classData);
-      // res.send(result);
+      const result = await classCollection.insertOne(classData);
+      res.send(result);
     });
 
 
