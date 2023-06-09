@@ -32,6 +32,7 @@ async function run() {
 
 
     const usersCollection = client.db("danceDB").collection("users");
+    const classCollection = client.db("danceDB").collection("class");
 
 
     
@@ -42,6 +43,15 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
+
+    // add class in database api
+    app.post('/addClass', async (req, res) => {
+      const classData = req.body;
+      console.log(classData);
+      // const result = await classCollection.insertOne(classData);
+      // res.send(result);
+    });
+
 
 
     // store user email on database
@@ -59,7 +69,6 @@ async function run() {
     });
 
     // make user admin api
-
     app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -70,7 +79,6 @@ async function run() {
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
-
     })
 
 
@@ -83,6 +91,8 @@ async function run() {
       const result = { admin: user?.role === 'admin' }
       res.send(result);
     })
+
+
      // check instructor with email
    
      app.get('/allUsers/instructor/:email', async (req, res) => {
