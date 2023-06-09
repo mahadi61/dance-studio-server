@@ -72,6 +72,28 @@ async function run() {
       res.send(result);
 
     })
+
+
+     // check admin with email
+    //  TODO: verify jwt
+     app.get('/allUsers/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'admin' }
+      res.send(result);
+    })
+     // check instructor with email
+   
+     app.get('/allUsers/instructor/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === 'instructor' }
+      res.send(result);
+    })
+
+
     // make user admin api
 
     app.patch('/users/instructor/:id', async (req, res) => {
