@@ -173,6 +173,20 @@ async function run() {
 
     })
 
+    // denied class api approved by admin
+    app.patch('/denied-classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: 'denied'
+        },
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
+
 
 
 
