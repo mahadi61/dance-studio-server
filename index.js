@@ -45,12 +45,42 @@ async function run() {
     });
 
 
+    // get all class for admin dashboard to change the status
+    app.get('/admin/allClasses', async (req, res)=>{
+      
+      const result = await classCollection.find().toArray();
+      res.send(result);
+    })
+
+
     // get all class approved by admin
     app.get('/classes', async (req, res)=>{
       const query = { status : "approved" };
       const result = await classCollection.find(query).toArray();
       res.send(result);
     })
+
+
+    // get all instructor api
+    app.get('/allInstructor', async(req, res)=>{
+      const query = { role: "instructor" }
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    
+
+    // get only instructor classes bye email
+    app.get('/instructor/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = { instructorEmail: email }
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+
+
 
     // add class in database api
     app.post('/addClass', async (req, res) => {
@@ -99,6 +129,8 @@ async function run() {
       res.send(result);
     })
 
+    
+
 
      // check instructor with email
    
@@ -122,6 +154,21 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+
+    })
+
+
+    // approved class api approved by admin
+    app.patch('/approved-classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          status: 'approved'
+        },
+      };
+      const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
 
     })
