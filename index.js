@@ -33,6 +33,7 @@ async function run() {
 
     const usersCollection = client.db("danceDB").collection("users");
     const classCollection = client.db("danceDB").collection("class");
+    const enrolledClassCollection = client.db("danceDB").collection("enrolledClass");
 
 
     
@@ -68,6 +69,14 @@ async function run() {
       res.send(result);
     })
 
+    // get single class by id 
+    app.get("/updateClassData/:id", async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await classCollection.findOne(query);
+      res.send(result);
+    })
+
     
 
     // get only instructor classes bye email
@@ -78,6 +87,19 @@ async function run() {
       res.send(result);
     })
 
+
+     // update a single class details
+     app.put('/class/update-class-data/', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          role: 'admin'
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
 
 
 
@@ -117,6 +139,7 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     })
+   
 
 
      // check admin with email
@@ -184,6 +207,39 @@ async function run() {
       };
       const result = await classCollection.updateOne(filter, updateDoc);
       res.send(result);
+
+    })
+
+
+    // create enroll api for one user
+    app.get('/my-selected-class/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = { enrolledBy: email, paymentStatus: "pending" };
+      const result = await enrolledClassCollection.find(query).toArray();
+      res.send(result);
+    })
+
+
+    // delete enroll class api for one user
+    app.patch('/delete-class', async(req, res)=>{
+      const id = req.body.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await enrolledClassCollection.deleteOne(query);
+      res.send(result);
+    })
+
+
+
+    // enroll api
+    app.post('/enroll-class', async (req, res) => {
+      const id = req.body.classId;
+      const enrolledBy = req.body.enrolledBy;
+      const filter = { _id: new ObjectId(id) };
+      let enrolledClass = await classCollection.findOne(filter);
+      enrolledClass = {...enrolledClass, paymentStatus: "pending", enrolledBy}
+      delete enrolledClass._id;
+      const enrolledClassList = await enrolledClassCollection.insertOne(enrolledClass)
+      res.send(enrolledClassList);
 
     })
 
