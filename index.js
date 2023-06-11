@@ -278,13 +278,17 @@ async function run() {
       const payment = req.body;
       const id = req.body.classId;
       const enrollClassId = req.body.enrollClassId;
-      const insertPayment = await paidClassCollection.insertOne(payment);
       // update available seats
       const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $inc: { seats: -1 },
       };
-     await classCollection.findOneAndUpdate(query, updateDoc);
+      await classCollection.findOneAndUpdate(query, updateDoc);
+      //  put class into paid class collection
+      const paidClass = await classCollection.findOne(query);
+      delete paidClass._id;     
+      const newPayment = {...payment, ...paidClass}
+      const insertPayment = await paidClassCollection.insertOne(newPayment);
       // delete class from selected class collection
       const deleteClass = await enrolledClassCollection.deleteOne({ _id: new ObjectId(enrollClassId) });
 
