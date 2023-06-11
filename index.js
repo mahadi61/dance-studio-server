@@ -3,7 +3,7 @@ const app = express();
 const cors = require('cors');
 // const jwt = require('jsonwebtoken');
 require('dotenv').config()
-// const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY)
+const stripe = require('stripe')(process.env.PAYMENT_Secret_key)
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -34,6 +34,8 @@ async function run() {
     const usersCollection = client.db("danceDB").collection("users");
     const classCollection = client.db("danceDB").collection("class");
     const enrolledClassCollection = client.db("danceDB").collection("enrolledClass");
+    const paidClassCollection = client.db("danceDB").collection("paidClass");
+
 
 
     
@@ -88,17 +90,14 @@ async function run() {
     })
 
 
-     // update a single class details
-     app.put('/class/update-class-data/', async (req, res) => {
+     // update a single class details : woring on it TODO
+     app.patch('/class/update-class-data/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          role: 'admin'
-        },
-      };
-      const result = await usersCollection.updateOne(filter, updateDoc);
-      res.send(result);
+      console.log(id,req.body);
+      // const id = req.body.
+      // const filter = {_id: new ObjectId(id)};
+      
+
     })
 
 
@@ -236,11 +235,45 @@ async function run() {
       const enrolledBy = req.body.enrolledBy;
       const filter = { _id: new ObjectId(id) };
       let enrolledClass = await classCollection.findOne(filter);
-      enrolledClass = {...enrolledClass, paymentStatus: "pending", enrolledBy}
+      enrolledClass = {...enrolledClass, paymentStatus: "pending", enrolledBy, enrolledClassId: id }
       delete enrolledClass._id;
+      console.log(enrolledClass);
       const enrolledClassList = await enrolledClassCollection.insertOne(enrolledClass)
       res.send(enrolledClassList);
 
+    })
+
+      // create payment intent
+      app.post('/payment-intent-for-class', async (req, res) => {
+        const { price } = req.body;
+        const amount = parseInt(price * 100);
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: amount,
+          currency: 'usd',
+          payment_method_types: ['card']
+        });
+  
+        res.send({
+          clientSecret: paymentIntent.client_secret
+        })
+      })
+  
+
+    //   // payment  api for storing payment info in database
+    app.post('/class-payment', async (req, res) => {
+      const payment = req.body;
+      const id = req.body.classId;
+      const insertPayment = await paidClassCollection.insertOne(payment);
+      // update available seats
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $inc: { seats: -1 },
+      };
+     await classCollection.findOneAndUpdate(query, updateDoc);
+      // delete class from selected class collection
+      const deleteClass = await enrolledClassCollection.deleteOne({ _id: new ObjectId(id) });
+
+      res.send({ insertPayment, deleteClass});
     })
 
 
