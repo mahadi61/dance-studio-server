@@ -219,6 +219,21 @@ async function run() {
     })
 
 
+    // create  api for student after payment to get enroll class data by email
+    app.get('/my-enroll-class/:email', async(req, res)=>{
+      const email = req.params.email;
+      const query = { email: email};
+      const result = await paidClassCollection.find(query).sort({ date: -1 }).toArray();
+      res.send(result);
+    })
+
+    // create  api for total enroll student
+    app.get('/total-enroll-class', async(req, res)=>{
+      const result = await paidClassCollection.find().toArray();
+      res.send(result);
+    })
+
+
     // delete enroll class api for one user
     app.patch('/delete-class', async(req, res)=>{
       const id = req.body.id;
@@ -237,7 +252,6 @@ async function run() {
       let enrolledClass = await classCollection.findOne(filter);
       enrolledClass = {...enrolledClass, paymentStatus: "pending", enrolledBy, enrolledClassId: id }
       delete enrolledClass._id;
-      console.log(enrolledClass);
       const enrolledClassList = await enrolledClassCollection.insertOne(enrolledClass)
       res.send(enrolledClassList);
 
@@ -263,6 +277,7 @@ async function run() {
     app.post('/class-payment', async (req, res) => {
       const payment = req.body;
       const id = req.body.classId;
+      const enrollClassId = req.body.enrollClassId;
       const insertPayment = await paidClassCollection.insertOne(payment);
       // update available seats
       const query = { _id: new ObjectId(id) };
@@ -271,7 +286,7 @@ async function run() {
       };
      await classCollection.findOneAndUpdate(query, updateDoc);
       // delete class from selected class collection
-      const deleteClass = await enrolledClassCollection.deleteOne({ _id: new ObjectId(id) });
+      const deleteClass = await enrolledClassCollection.deleteOne({ _id: new ObjectId(enrollClassId) });
 
       res.send({ insertPayment, deleteClass});
     })
