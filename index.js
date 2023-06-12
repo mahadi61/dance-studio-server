@@ -115,6 +115,13 @@ app.get("/updateClassData/:id", async(req, res)=>{
 })
 
 
+// TODO: get popular class by enroll studnet count
+// get popular class
+app.get("/popular-class", async(req, res)=>{
+  const result = await classCollection.find().toArray();
+  res.send(result);
+})
+
 
 // get only instructor classes bye email
 app.get('/instructor/:email', async(req, res)=>{
