@@ -156,9 +156,8 @@ app.get("/updateClassData/:id", async(req, res)=>{
 app.get("/popular-class", async(req, res)=>{
 
 
-
-
-  const result = await classCollection.find().limit(6).toArray();
+  const result = await classCollection.find().sort({enrollStudent: -1}).limit(6).toArray();
+  console.log(result);
   res.send(result);
 })
 
@@ -402,7 +401,7 @@ app.post('/class-payment', async (req, res) => {
   // update available seats
   const query = { _id: new ObjectId(id) };
   const updateDoc = {
-    $inc: { seats: -1 },
+    $inc: { seats: -1 ,enrollStudent: +1 }
   };
   await classCollection.findOneAndUpdate(query, updateDoc);
   //  put class into paid class collection
